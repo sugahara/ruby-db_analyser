@@ -12,6 +12,13 @@ module DBAnalyser
       ms = 0.000001 * microsec
       datetime + ms
     end
+
+    def log_initialize(conditions, logger)
+      logger.log("# conditions")
+      conditons.each do |v, key|
+        logger.log("#     #{key} => #{v}")
+      end
+    end
     
     def packet_length(conditions = {}, logger = DBAnalyser::Log.new(STDOUT))
       #これprotocol4指定した場合，tcp.reassembled.lengthでlength取らなちょっと矛盾あるしそのフィールド追加せなあかんやん　はよせな
@@ -21,7 +28,7 @@ module DBAnalyser
         puts "#{table}"
         #TargetTable.set_table_name(table.to_sym)
         TargetTable.table_name = table
-        if(conditions.has_key?(:protocol_4))
+        if(conditions.has_key?(:protocol_4) || conditions.has_key?(:protocol_5))
           length_result = TargetTable.where(conditions).find(:all, :select => "tcp_reassembled_length")
         else
           length_result = TargetTable.where(conditions).find(:all, :select => "length")
@@ -39,7 +46,6 @@ module DBAnalyser
 
       @tablelist.each do |table|
         puts "#{table}"
-        #TargetTable.set_table_name(table.to_sym)
         TargetTable.table_name = table
         result = TargetTable.where(conditions).find(:all, :select => "time, micro_second")
         result.each_with_index do |v, i|
