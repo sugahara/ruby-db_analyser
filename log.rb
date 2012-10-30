@@ -1,12 +1,13 @@
 require 'logger'
+require 'readline'
 module DBAnalyser
   
   class Log < Logger
     def initialize(logdev)
       unless logdev == STDOUT
         if File.exist?(logdev)
-          puts "Are you sure to delete old log file?[y,n]"
-          ans = readline(prompt = "", add_hist = false)
+          puts "Are you sure to delete old log file(#{logdev})}?[y,n]"
+          ans = Readline.readline(prompt = "", add_hist = false)
           if ans=="y"
             File.delete(logdev)
           else
