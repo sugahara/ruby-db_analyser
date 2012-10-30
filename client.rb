@@ -17,6 +17,7 @@ module DBAnalyser
 
   class GenericClient
     def initialize(config = config.dup.update(DNAnalyserConfig::Generic))
+      #ActiveRecord::Base.logger = Logger.new(STDOUT)
       ActiveRecord::Base.establish_connection(config)
       @tablelist = ActiveRecord::Base.connection.tables
       TargetTable.table_name = @tablelist.first
