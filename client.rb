@@ -19,7 +19,7 @@ module DBAnalyser
     def initialize(config = config.dup.update(DNAnalyserConfig::Generic))
       ActiveRecord::Base.establish_connection(config)
       @tablelist = ActiveRecord::Base.connection.tables
-      TargetTable.set_table_name(@tablelist.first.to_sym)
+      TargetTable.table_name = @tablelist.first
     end
     
   end
