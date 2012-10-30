@@ -19,6 +19,14 @@ module DBAnalyser
         logger.log("#     #{key} => #{v}")
       end
     end
+
+    def get_first_number(conditions)
+      TargetTable.where(conditions).find(:first, :select => "number").number
+    end
+    
+    def get_last_number(conditions)
+      TargetTable.where(conditions).find(:last, :select => "number").number
+    end
     
     def packet_length(conditions = {}, logger = DBAnalyser::Log.new(STDOUT))
       #これprotocol4指定した場合，tcp.reassembled.lengthでlength取らなちょっと矛盾あるしそのフィールド追加せなあかんやん　はよせな
@@ -26,19 +34,24 @@ module DBAnalyser
       result_length_array = Array.new
       @tablelist.each do |table|
         puts "#{table}"
-        #TargetTable.set_table_name(table.to_sym)
         TargetTable.table_name = table
-        if(conditions.has_key?(:protocol_4) || conditions.has_key?(:protocol_5))
-          length_result = TargetTable.where(conditions).find(:all, :select => "tcp_reassembled_length")
-        else
-          length_result = TargetTable.where(conditions).find(:all, :select => "length")
+        firstnum = get_first_number(conditions)
+        lastnum = get_last_number(conditions)
+        (firstnum..lastnum).each do |num|
+          conditions.update(:number => num)
+          if(conditions.has_key?(:protocol_4) || conditions.has_key?(:protocol_5))
+            length_result = TargetTable.where(conditions).find(:all, :select => "tcp_reassembled_length").tcp_reassembled_length
+          else
+            length_result = TargetTable.where(conditions).find(:all, :select => "length").length
+          end
+          logger.info(length_result)
         end
-        length_result.each do |data|
-          logger.info(temp_length_array << data.length)
-        end
-        result_length_array = result_length_array + temp_length_array
+        #length_result.each do |data|
+        #  logger.info(temp_length_array << data.length)
+        #end
+        #result_length_array = result_length_array + temp_length_array
       end
-      result_length_array
+      #result_length_array
     end
     
     def packet_iat(conditions = {}, logger = DBAnalyser::Log.new(STDOUT))
