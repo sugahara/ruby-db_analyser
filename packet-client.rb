@@ -29,29 +29,23 @@ module DBAnalyser
     end
     
     def packet_length(conditions = {}, logger = DBAnalyser::Log.new(STDOUT))
-      #これprotocol4指定した場合，tcp.reassembled.lengthでlength取らなちょっと矛盾あるしそのフィールド追加せなあかんやん　はよせな
-      temp_length_array = Array.new
-      result_length_array = Array.new
+      log_initialize(conditions, logger)
       @tablelist.each do |table|
         puts "#{table}"
         TargetTable.table_name = table
+        filtered_table = TargetTable.where(conditions)
         firstnum = get_first_number(conditions)
         lastnum = get_last_number(conditions)
         (firstnum..lastnum).each do |num|
           conditions.update(:number => num)
           if(conditions.has_key?(:protocol_4) || conditions.has_key?(:protocol_5))
-            length_result = TargetTable.where(conditions).find(:all, :select => "tcp_reassembled_length").tcp_reassembled_length
+            length_result = filtered_table.find(:all, :select => "tcp_reassembled_length").tcp_reassembled_length
           else
-            length_result = TargetTable.where(conditions).find(:all, :select => "length").length
+            length_result = filtered_table.where(conditions).find(:all, :select => "length").lengtht
           end
           logger.info(length_result)
         end
-        #length_result.each do |data|
-        #  logger.info(temp_length_array << data.length)
-        #end
-        #result_length_array = result_length_array + temp_length_array
       end
-      #result_length_array
     end
     
     def packet_iat(conditions = {}, logger = DBAnalyser::Log.new(STDOUT))
@@ -71,26 +65,6 @@ module DBAnalyser
           logger.info(iat)
         end
         iat_array
-        #first_number = TargetTable.find(:first, :select => "number").number
-        #last_number   = TargetTable.find(:last, :select => "number").number
-        #(first_number...last_number).each do |number|
-        #  puts number
-        #  conditions.update(:number => number)
-        #  result = TargetTable.where(conditions).find(:all, :select => "time, micro_second")
-        #  
-        #  time0 = result[0].time
-        #  micro_second0 = result[0].micro_second
-        #  conditions.update(:number => number+1)
-        #  result = TargetTable.where(conditions).find(:all, :select => "time, micro_second")
-        #  time1 = result[0].time
-        #  micro_second1 = result[0].micro_second
-        #  iat_array << iat = time_gen(time1, micro_second1) - time_gen(time0, micro_second0)
-        #  logger.info(iat)
-        #  iat_array
-        # end
-        #iat_array << time1 - time 0
-        # not implimented yet
-        # protocol4指定する場合は，分割されたTCPパケットも含めてIATをとるのと最終パケットのIATを取るの両方実装する．
       end
       
   end
