@@ -31,7 +31,11 @@ module DBAnalyser
     end
     
     def get_timeslot(start_time, delta_t)
-      timeslot = start_time...(start_time + delta_t)
+      unless @config[:time].nil? # When time span was specified
+        timeslot = @config[:time].first...(@config[:time].first + delta_t)
+      else
+        timeslot = start_time...(start_time + delta_t)
+      end
       #1秒未満のウィンドウサイズで秒数が変わった時の対処
       check_timeslot_second(timeslot, delta_t)
       puts "timeslot:#{timeslot}"
@@ -40,6 +44,9 @@ module DBAnalyser
 
     def slide_timeslot(prev_timeslot, delta_t)
       timeslot = prev_timeslot.last...prev_timeslot.last+delta_t
+      if timeslot.last > @config[:time].first
+        exit
+      end
       check_timeslot_second(timeslot, delta_t)
       puts "timeslot:#{timeslot}"
       timeslot
